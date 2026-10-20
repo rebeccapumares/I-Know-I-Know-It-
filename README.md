@@ -6,7 +6,6 @@ states**: the "I know it, I know it…" feeling of being sure you know a word wh
 unable to retrieve it. Predictions are made from multilingual recall, response-time and
 recognition data.
 
-![Interactive demo](web/screenshot.png)
 
 **Interactive demo:** open `web/index.html` in a browser. It runs the trained network with its
 exact weights in JavaScript (verified to match the NumPy predictions), so you can adjust a recall
