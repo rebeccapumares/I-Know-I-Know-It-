@@ -1,0 +1,46 @@
+[data] simulated 14,400 trials -> data/tot_trials_simulated.csv
+[data] train/val/test trials: 10080/2160/2160 (split by participant) | 22 features
+[data] train class counts: KNOW=5988, TOT=2265, DONT_KNOW=1827
+[gradcheck] max relative error analytic vs numerical: 2.05e-07 (PASS)
+
+[train] baseline: softmax regression (no hidden layers)
+[train] feedforward net 22 -> 32 -> 3 (ReLU, dropout 0.1, L2 0.0001, Adam lr 0.001)
+epoch   1 | train 0.9164 | val 0.6473 | val acc 0.789 | lr 1.0e-03
+epoch  10 | train 0.4403 | val 0.4219 | val acc 0.843 | lr 1.0e-03
+epoch  20 | train 0.4245 | val 0.4195 | val acc 0.841 | lr 1.0e-03
+epoch  30 | train 0.4129 | val 0.4174 | val acc 0.845 | lr 5.0e-04
+early stopping at epoch 37 (best val loss 0.4160)
+
+majority-class baseline accuracy: 0.621
+
+=== softmax regression baseline (test) ===
+accuracy 0.848 | macro F1 0.798 | TOT-vs-rest ROC AUC 0.911
+  KNOW       precision 0.967  recall 0.893  F1 0.929  (n=1341)
+  TOT        precision 0.638  recall 0.717  F1 0.675  (n=442)
+  DONT_KNOW  precision 0.745  recall 0.838  F1 0.789  (n=377)
+true \ pred         KNOW        TOT  DONT_KNOW
+KNOW                1198        122         21
+TOT                   38        317         87
+DONT_KNOW              3         58        316
+
+=== feedforward network (test) ===
+accuracy 0.851 | macro F1 0.805 | TOT-vs-rest ROC AUC 0.917
+  KNOW       precision 0.966  recall 0.892  F1 0.927  (n=1341)
+  TOT        precision 0.648  recall 0.729  F1 0.686  (n=442)
+  DONT_KNOW  precision 0.755  recall 0.851  F1 0.800  (n=377)
+true \ pred         KNOW        TOT  DONT_KNOW
+KNOW                1196        122         23
+TOT                   39        322         81
+DONT_KNOW              3         53        321
+
+=== permutation importance (rise in test loss) ===
+  recall_rt_ms             +0.3230
+  word_log_freq            +0.1717
+  partial_first_letter     +0.1102
+  feeling_of_knowing       +0.1013
+  recognition_correct      +0.0914
+  translation_recalled     +0.0714
+  proficiency              +0.0328
+  recognition_rt_ms        +0.0327
+
+[save] model, preprocessor and metrics written to results/

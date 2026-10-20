@@ -1,0 +1,494 @@
+<title>I Know I Know It</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: a neural-lab console, committed to one dark world. Trial controls left, the network's live verdict right, evidence below. */
+:root {
+  color-scheme: dark;
+  --bg: #0b0d1f;
+  --panel: #141634;
+  --panel-2: #1b1e44;
+  --ink: #eef0ff;
+  --ink-2: #b6bae2;
+  --ink-3: #8186b3;
+  --line: #2c3064;
+  --line-2: #22264f;
+  --chip: #1f2350;
+  --accent: #a68bff;               /* electric violet: controls, neurons, focus */
+  --accent-2: #5fd4ff;             /* cyan: highlights */
+  --know: #3d8ef0;                 /* class colors, validated on --panel incl. color-blind checks */
+  --tot: #e8582a;
+  --dk: #14a878;
+  --know-soft: color-mix(in srgb, var(--know) 22%, var(--panel));
+  --tot-soft: color-mix(in srgb, var(--tot) 22%, var(--panel));
+  --dk-soft: color-mix(in srgb, var(--dk) 22%, var(--panel));
+  --glow: var(--tot);
+  --display: "Unbounded", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  background:
+    radial-gradient(900px 420px at 85% -80px, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+    radial-gradient(700px 380px at -10% 10%, color-mix(in srgb, var(--accent-2) 12%, transparent), transparent 70%),
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--ink-3) 22%, transparent) 1px, transparent 0) 0 0 / 22px 22px,
+    var(--bg);
+  color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 30px; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+.eyebrow { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent-2); font-weight: 500; }
+
+/* header */
+header { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px 36px; align-items: center; }
+@media (max-width: 900px) { header { grid-template-columns: minmax(0, 1fr); } }
+.hero-text { display: grid; gap: 14px; min-width: 0; }
+header h1 { font-family: var(--display); font-weight: 800; font-size: clamp(32px, 5.2vw, 58px); line-height: 1.02; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+header h1 em { font-style: normal; font-weight: 400; background: linear-gradient(90deg, var(--tot), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+header p { margin: 0; color: var(--ink-2); max-width: 62ch; font-size: 15.5px; text-wrap: pretty; }
+.note { font-size: 12.5px; color: var(--ink-3); }
+.tip-word { background: linear-gradient(160deg, var(--panel-2), var(--panel)); border: 1px solid var(--line); border-radius: 18px; padding: 22px; display: grid; gap: 14px; box-shadow: 0 20px 60px -30px color-mix(in srgb, var(--accent) 60%, transparent); min-width: 0; }
+.tip-word .clue { font-size: 13.5px; color: var(--ink-2); }
+.tip-word .clue b { color: var(--ink); font-weight: 600; }
+.tiles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 38px); gap: 5px; }
+.tile { width: 100%; aspect-ratio: 4 / 5; border-radius: 8px; display: grid; place-items: center; font-family: var(--mono); font-weight: 700; font-size: clamp(15px, 1.8vw, 20px); background: var(--bg); border: 1px solid var(--line); color: var(--ink-3); text-transform: uppercase; transition: color .2s, border-color .2s, box-shadow .2s; }
+.tile.lock { color: var(--ink); border-color: var(--tot); box-shadow: 0 0 14px -2px color-mix(in srgb, var(--tot) 70%, transparent); }
+.tip-word .meter { display: flex; gap: 10px; align-items: center; font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
+.tip-word .meter .bar { flex: 1; height: 6px; border-radius: 99px; background: var(--line-2); overflow: hidden; }
+.tip-word .meter .bar span { display: block; height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--tot)); transition: width .4s ease; }
+
+/* examples */
+.examples { display: grid; gap: 10px; }
+.ex-row { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-color: var(--line) transparent; }
+.ex { flex: 0 0 auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; text-align: left; display: grid; gap: 3px; min-width: 160px; transition: transform .15s, border-color .15s; }
+.ex:hover { transform: translateY(-2px); border-color: var(--accent); }
+.ex[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 8px 24px -12px var(--accent); }
+.ex .t { font-family: var(--display); font-weight: 600; font-size: 12.5px; }
+.ex .s { font-size: 12px; color: var(--ink-3); }
+.ex .miss { color: var(--tot); font-weight: 600; }
+
+/* console */
+.console { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .console { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--line); border-radius: 18px; padding: 20px; backdrop-filter: blur(6px); }
+.controls { display: grid; gap: 18px; }
+fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 11px; min-width: 0; }
+legend { font-family: var(--display); font-size: 14px; font-weight: 600; padding: 0; margin-bottom: 6px; letter-spacing: 0.01em; }
+.group + .group { border-top: 1px dashed var(--line); padding-top: 16px; }
+.field { display: grid; grid-template-columns: minmax(0, 9.5em) minmax(0, 1fr) 6.2em; gap: 10px; align-items: center; }
+@media (max-width: 480px) { .field { grid-template-columns: minmax(0, 1fr) 6.2em; } .field input[type=range] { grid-column: 1 / -1; grid-row: 2; } }
+.field label { font-size: 13px; color: var(--ink-2); }
+.field .val { font-family: var(--mono); font-size: 12.5px; text-align: right; color: var(--accent-2); }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 20px; background: transparent; }
+input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); opacity: .85; }
+input[type=range]::-moz-range-track { height: 6px; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: var(--ink); border: 3px solid var(--accent); box-shadow: 0 0 12px var(--accent); }
+input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--ink); border: 3px solid var(--accent); box-shadow: 0 0 12px var(--accent); }
+.toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+.tog { display: inline-flex; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px 6px 9px; font-size: 13px; background: var(--panel-2); cursor: pointer; transition: border-color .15s, background .15s; }
+.tog input { accent-color: var(--accent); margin: 0; }
+.tog:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 20%, var(--panel)); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--panel-2); }
+.seg button { border: 0; background: transparent; padding: 7px 13px; font-size: 13px; color: var(--ink-2); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--bg); font-weight: 700; }
+.row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+select { border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); padding: 7px 10px; }
+
+/* verdict */
+.verdict { display: grid; gap: 20px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); border-color: color-mix(in srgb, var(--glow) 55%, var(--line)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--glow) 25%, transparent), 0 24px 70px -30px var(--glow); transition: border-color .3s, box-shadow .3s; }
+@media (max-width: 900px) { .verdict { position: static; } }
+.state { display: grid; gap: 6px; }
+.state .big { font-family: var(--display); font-size: clamp(26px, 3.4vw, 36px); line-height: 1.08; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 0 28px color-mix(in srgb, var(--glow) 55%, transparent); }
+.state .gloss { color: var(--ink-2); font-size: 14px; }
+.probs { display: grid; gap: 12px; }
+.prob { display: grid; grid-template-columns: 9.6em minmax(0, 1fr) 3.8em; gap: 10px; align-items: center; }
+.prob .name { font-size: 13px; font-weight: 600; display: flex; gap: 8px; align-items: center; }
+.prob .sw { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; box-shadow: 0 0 8px currentColor; }
+.track { height: 12px; background: var(--line-2); border-radius: 99px; overflow: hidden; }
+.track > div { height: 100%; border-radius: 99px; transition: width .35s cubic-bezier(.2,.8,.2,1); }
+.prob .p { font-family: var(--mono); font-size: 13px; text-align: right; }
+.net { display: grid; gap: 8px; }
+.net-row { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 7px; padding: 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line-2); }
+.net-row div { aspect-ratio: 1; border-radius: 50%; background: var(--accent); max-width: 100%; transition: opacity .25s, box-shadow .25s; }
+.net-cap { font-size: 12px; color: var(--ink-3); }
+.why { display: grid; gap: 7px; }
+.why-item { display: grid; grid-template-columns: minmax(0, 1fr) 7.5em; gap: 10px; font-size: 13px; align-items: center; }
+.why-item .lab { color: var(--ink-2); }
+.why-bar { position: relative; height: 10px; background: var(--line-2); border-radius: 99px; }
+.why-bar span { position: absolute; top: 0; bottom: 0; border-radius: 99px; }
+.why-bar .mid { position: absolute; left: 50%; top: -3px; bottom: -3px; border-left: 1px solid var(--ink-3); }
+.h3 { font-family: var(--display); font-size: 14px; font-weight: 600; margin: 0; letter-spacing: 0.01em; }
+
+/* evidence */
+.evidence { display: grid; gap: 16px; }
+.evidence > h2 { font-family: var(--display); font-weight: 600; font-size: clamp(20px, 2.6vw, 26px); margin: 0; text-wrap: balance; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 3px; }
+.stat .v { font-family: var(--display); font-size: clamp(20px, 2.4vw, 26px); font-weight: 800; background: linear-gradient(90deg, var(--accent-2), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.stat .k { font-size: 12.5px; color: var(--ink); font-weight: 600; }
+.stat .d { font-size: 12px; color: var(--ink-3); }
+.charts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 1000px) { .charts { grid-template-columns: minmax(0, 1fr); } }
+.chart { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.chart p { margin: 0; font-size: 12.5px; color: var(--ink-3); }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.cm { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 4px; font-size: 12px; }
+.cm th { font-weight: 500; color: var(--ink-3); font-size: 11px; padding: 2px; }
+.cm th:first-child { width: 5.6em; }
+.cm th.rowh { text-align: right; padding-right: 6px; white-space: nowrap; }
+.cm td { text-align: center; padding: 12px 4px; border-radius: 8px; font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 14px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 6px; }
+.legend i.dash { border-top-style: dashed; }
+.tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 5px 8px; border-radius: 6px; opacity: 0; transition: opacity .12s; z-index: 5; font-family: var(--mono); }
+footer { font-size: 12.5px; color: var(--ink-3); max-width: 80ch; }
+@media (prefers-reduced-motion: reduce) { .track > div, .net-row div, .tile, .ex, .verdict, .tip-word .meter .bar span { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="hero-text">
+      <span class="eyebrow">// Tip-of-the-tongue predictor · neural net from scratch in NumPy</span>
+      <h1>I know it, <em>I&nbsp;know&nbsp;it…</em></h1>
+      <p>You can see the word, feel its first letter, and still not say it. This network reads one recall attempt (the language, the word, how long the search took, how sure the person felt, and whether they recognized the word later) and predicts whether that moment was a tip-of-the-tongue state.</p>
+      <span class="note">Running the trained 22 → 32 → 3 network live in your browser with its exact weights. Trained and tested on a simulated multilingual dataset grounded in published TOT findings.</span>
+    </div>
+    <div class="tip-word" aria-label="Animated example of a word stuck on the tip of the tongue">
+      <span class="eyebrow">// retrieval in progress</span>
+      <div class="clue" id="clue"></div>
+      <div class="tiles" id="tiles" aria-hidden="true"></div>
+      <div class="meter"><span>feeling of knowing</span><div class="bar"><span id="fok"></span></div><span id="fokv">0/6</span></div>
+    </div>
+  </header>
+
+  <section class="examples" aria-labelledby="ex-h">
+    <span class="eyebrow" id="ex-h">Load a real trial from the held-out test set</span>
+    <div class="ex-row" id="examples"></div>
+  </section>
+
+  <div class="console">
+    <div class="panel controls">
+      <fieldset class="group">
+        <legend>Language</legend>
+        <div class="row">
+          <label for="lang" class="note" style="color:var(--ink-2)">Tested in</label>
+          <select id="lang"><option>English</option><option>Spanish</option><option>Catalan</option><option>French</option><option>Mandarin</option></select>
+          <div class="seg" role="group" aria-label="Language role" id="role">
+            <button type="button" data-v="dominant">Dominant</button><button type="button" data-v="nondominant">Second</button><button type="button" data-v="third">Third</button>
+          </div>
+        </div>
+        <div class="field"><label for="proficiency">Proficiency</label><input type="range" id="proficiency" min="0.15" max="1" step="0.01"><span class="val" id="v-proficiency"></span></div>
+      </fieldset>
+      <fieldset class="group">
+        <legend>The target word</legend>
+        <div class="field"><label for="word_log_freq">Word frequency</label><input type="range" id="word_log_freq" min="0.3" max="5" step="0.05"><span class="val" id="v-word_log_freq"></span></div>
+        <div class="field"><label for="age_of_acquisition">Learned at age</label><input type="range" id="age_of_acquisition" min="2" max="20" step="0.5"><span class="val" id="v-age_of_acquisition"></span></div>
+        <div class="field"><label for="n_syllables">Syllables</label><input type="range" id="n_syllables" min="1" max="6" step="1"><span class="val" id="v-n_syllables"></span></div>
+        <div class="toggles">
+          <label class="tog"><input type="checkbox" id="is_cognate">Cognate in another language</label>
+          <label class="tog"><input type="checkbox" id="is_proper_name">Proper name</label>
+        </div>
+      </fieldset>
+      <fieldset class="group">
+        <legend>The recall attempt</legend>
+        <div class="field"><label for="participant_age">Participant age</label><input type="range" id="participant_age" min="18" max="85" step="1"><span class="val" id="v-participant_age"></span></div>
+        <div class="field"><label for="recall_rt_ms">Time searching</label><input type="range" id="recall_rt_ms" min="0" max="1" step="0.001"><span class="val" id="v-recall_rt_ms"></span></div>
+        <div class="field"><label for="feeling_of_knowing">Feeling of knowing</label><input type="range" id="feeling_of_knowing" min="1" max="6" step="1"><span class="val" id="v-feeling_of_knowing"></span></div>
+        <div class="toggles">
+          <label class="tog"><input type="checkbox" id="partial_first_letter">Got the first letter</label>
+          <label class="tog"><input type="checkbox" id="partial_syllables">Guessed the syllables</label>
+          <label class="tog"><input type="checkbox" id="translation_recalled">Knew it in another language</label>
+        </div>
+      </fieldset>
+      <fieldset class="group">
+        <legend>Recognition test, afterwards</legend>
+        <div class="toggles"><label class="tog"><input type="checkbox" id="recognition_correct">Picked the right word</label></div>
+        <div class="field"><label for="recognition_rt_ms">Time to recognize</label><input type="range" id="recognition_rt_ms" min="0" max="1" step="0.001"><span class="val" id="v-recognition_rt_ms"></span></div>
+      </fieldset>
+    </div>
+
+    <div class="panel verdict" aria-live="polite">
+      <div class="state">
+        <span class="eyebrow">Network's verdict</span>
+        <div class="big" id="bigState">…</div>
+        <div class="gloss" id="gloss"></div>
+      </div>
+      <div class="probs" id="probs"></div>
+      <div class="net">
+        <span class="eyebrow">Hidden layer · 32 ReLU units</span>
+        <div class="net-row" id="hidden" aria-hidden="true"></div>
+        <span class="net-cap" id="netcap"></span>
+      </div>
+      <div class="why">
+        <h3 class="h3" id="whyTitle">What moved this prediction</h3>
+        <div id="why"></div>
+        <span class="net-cap">Each bar is the change in this probability if that input were reset to an average trial (toggles are flipped instead).</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="evidence" aria-labelledby="ev-h">
+    <h2 id="ev-h">How it did on 2,160 trials from 24 people it never saw</h2>
+    <div class="stats">
+      <div class="stat"><span class="v">85.1%</span><span class="k">Accuracy</span><span class="d">vs 62.1% always guessing "know"</span></div>
+      <div class="stat"><span class="v">0.917</span><span class="k">TOT vs rest ROC AUC</span><span class="d">0.911 for a linear baseline</span></div>
+      <div class="stat"><span class="v">0.686</span><span class="k">TOT F1 score</span><span class="d">the hardest of the three states</span></div>
+      <div class="stat"><span class="v">2×10⁻⁷</span><span class="k">Gradient check error</span><span class="d">hand-written backprop vs numerical</span></div>
+    </div>
+    <div class="charts">
+      <div class="chart">
+        <h3 class="h3">Confusion matrix</h3>
+        <div style="overflow-x:auto"><table class="cm" id="cm"></table></div>
+        <p>Rows are the true state, columns the prediction. Most TOT errors are called "don't know", which makes sense: a stubborn TOT feels like not knowing.</p>
+      </div>
+      <div class="chart">
+        <h3 class="h3">What the network relies on</h3>
+        <div id="imp"></div>
+        <p>Rise in test loss when one input is shuffled. Search time, word frequency and partial recall carry the most signal, matching TOT research.</p>
+      </div>
+      <div class="chart">
+        <h3 class="h3">Training</h3>
+        <div class="legend"><span><i style="border-color:var(--accent)"></i>Training loss</span><span><i class="dash" style="border-color:var(--ink-2)"></i>Validation loss</span></div>
+        <div id="curve"></div>
+        <p>Early stopping restored the weights from epoch 22, where validation loss was lowest.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>Built from scratch in NumPy: dense layers, ReLU, dropout, softmax cross-entropy with class weights, Adam, early stopping and gradient checking. The dataset is simulated, with effects taken from TOT research such as more TOTs for rare words and in a second language. Real data in the same format plugs straight in.</footer>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const M = {"W1":[[0.067122,-0.003278,-0.029549,-0.344585,0.055832,-0.03184,-0.178017,0.475394,-0.142321,0.052663,0.118537,-0.021094,0.23624,-0.253943,0.185277,0.398486,-0.23728,0.224595,-0.229827,-0.293883,-0.5325,0.04119,-0.520344,-0.075033,-0.20077,0.026529,-0.748612,-0.103203,0.025125,0.102783,-0.236077,-0.264746],[-0.117734,0.193192,0.172832,-0.194987,-0.27298,0.433273,-0.455043,-0.099299,-0.202592,0.265195,0.003776,-0.067508,0.482682,-0.693797,0.54523,0.500193,-0.024278,0.72523,0.365745,-0.040428,0.012086,0.318376,-0.429334,0.003861,-0.180755,-0.145277,0.620946,-0.234616,0.156389,-0.047816,0.308652,-0.311453],[-0.233532,0.029381,0.322184,0.240467,-0.043668,-0.195096,0.205058,-0.207668,-0.192521,0.017552,0.007926,0.101364,-0.048138,0.0229,-0.132579,0.085406,0.067986,-0.059063,0.101232,-0.172059,0.313659,-0.140115,0.038424,-0.033903,0.167801,0.138325,0.042624,0.313712,-0.047156,0.267865,-0.138912,-0.043354],[-0.371242,0.007514,-0.187162,-0.596786,0.093987,-0.46074,0.252756,0.67447,-0.021059,-0.063822,-0.073685,0.06416,-0.050408,0.08463,0.209527,-0.208737,0.000432,-0.088648,0.053901,-0.114332,0.100272,0.064166,0.147003,0.119462,0.023241,-0.24651,0.017428,-0.319127,-0.058979,0.131307,-0.402551,0.043006],[-0.40572,0.167983,-0.090981,0.111295,-0.015091,-0.423326,0.432902,0.040743,-0.033984,-0.081526,0.004479,-0.042082,0.008969,0.008287,0.054027,-0.231401,-0.061034,-0.325784,0.122955,-0.069188,0.40746,-0.014811,0.021501,0.015106,-0.040488,0.034225,-0.040721,0.048331,-0.148742,-0.13897,0.321743,-0.015192],[-0.482325,-0.116161,0.678069,-0.240968,0.310127,-0.229972,-0.258334,0.544132,0.423578,0.05701,-0.642668,0.199744,-0.578053,0.034656,-0.479289,-0.201837,1.038774,-0.53633,-0.242441,-0.035695,0.397911,0.394933,-0.010145,-0.010062,0.020688,0.091239,0.394674,0.59738,0.412418,0.022572,-0.722382,0.163853],[0.37263,-0.107624,0.125072,0.233444,0.028336,0.298415,0.0354,0.072908,-0.228114,-0.011036,0.189035,0.404956,0.512014,0.434284,-0.361411,-0.473417,0.023947,-0.173225,-0.067235,0.097095,-0.361614,-0.482305,0.082087,0.04503,0.122183,0.010448,-0.395261,-0.31445,-0.09874,-0.151789,-0.284194,0.026396],[0.163242,0.098261,-0.08872,-0.185955,-0.036646,-0.166442,-0.004424,0.130447,0.02042,0.163022,0.713759,-0.6038,0.469125,0.015318,0.414837,-0.394467,0.348323,0.509912,0.102756,0.068192,0.07895,0.675964,-0.072997,-0.651306,-0.219012,-0.410706,-0.576683,0.136957,0.42309,0.10704,-0.029587,-0.210809],[0.329771,0.335382,-0.17214,-0.232334,-0.208583,0.531048,-0.418824,-0.019822,-0.069299,0.24402,0.001801,0.159191,0.177213,-0.341399,0.195032,-0.034389,0.22175,0.523234,0.158347,0.448857,-0.240654,-0.796811,0.006482,-0.169076,-0.032876,-0.165426,-0.319211,0.002877,0.21663,-0.036554,0.346177,0.284087],[-0.490138,-0.283648,-0.140371,0.028909,0.649536,-0.358545,0.446863,0.188235,0.342677,0.011774,-0.488097,-0.025763,-0.173301,0.275241,-0.401947,-0.501494,0.156022,-0.114099,-0.155522,0.146097,0.150321,-0.159992,0.006464,0.313891,-0.038921,-0.072525,0.183512,0.320317,-0.050466,-0.181996,-0.544974,0.162242],[-0.12297,0.557483,0.227811,-0.18465,-0.520321,0.197287,-0.333617,-0.270542,-0.122187,0.88598,0.22429,-0.440907,0.189323,-0.426262,-0.034144,0.244776,-0.038618,0.240114,0.602026,0.822977,-0.332922,0.426478,0.161878,-0.426066,-0.523181,-0.662528,-0.163182,0.157898,0.298924,-0.301988,0.316012,-0.235721],[0.150193,0.239875,-0.01617,-0.107604,-0.240613,0.096204,-0.166201,-0.077578,-0.0723,0.708421,0.221722,-0.099679,-0.104567,-0.164819,-0.172348,-0.245404,0.050115,0.450997,0.207241,-0.035802,-0.250548,0.135942,-0.084506,0.338474,-0.291446,-0.301322,-0.381223,0.008679,0.184625,-0.370706,0.408906,-0.402156],[0.197004,0.533088,0.306163,-0.287163,0.032455,-0.002483,-0.25559,-0.173759,-0.426732,0.107134,0.140017,-0.44184,0.510724,0.041692,-0.231287,0.258695,0.002341,0.235559,0.048278,0.607672,0.399301,-0.008519,-0.761574,-0.075931,-0.263371,-0.661343,0.678176,0.289276,0.709048,-0.005563,0.1733,-0.535413],[0.594887,0.408602,0.445701,-0.457342,-0.116237,-0.457075,-0.338497,0.549267,-0.566822,0.692333,0.014232,-0.612976,0.101674,-0.377239,0.33933,-0.249541,-0.301873,0.240572,0.059058,0.104112,-0.142351,0.61034,-0.505096,-0.462848,-0.580249,-0.416803,0.18515,-0.011926,0.536473,-0.229447,0.478643,-0.138951],[-0.061604,0.065476,-0.169512,0.265988,0.281057,0.168321,-0.188084,0.063565,0.463347,-0.141095,-0.064607,-0.404884,0.302339,-0.14479,-0.287386,0.152068,0.200284,-0.328267,0.143001,-0.281008,-0.361032,0.219066,-0.387577,-0.339457,0.275387,0.199193,-0.183275,-0.327073,-0.380761,-0.431216,0.681641,-0.372314],[-0.029172,-0.040216,0.014112,0.086406,0.602692,-0.335287,-0.127919,-0.446986,0.098788,-0.007137,0.078102,-0.027817,-0.513035,0.14804,0.285986,-0.710752,0.1382,-0.344945,0.042478,-0.368771,0.071404,-0.440941,-0.049444,0.428307,0.37798,0.090627,-0.241157,-0.470228,-0.118132,-0.123485,-0.082196,-0.018755],[-0.159566,-0.080204,0.019111,0.482445,0.637791,0.049843,0.051677,0.08744,0.213244,-0.151553,0.201176,-0.062509,0.116199,0.069396,-0.188446,-0.229096,-0.296347,-0.420572,-0.220907,-0.28593,0.099964,0.113114,-0.216936,0.263461,0.093361,0.285638,-0.154134,-0.492535,0.054809,-0.093919,-0.256075,-0.066384],[-0.183198,-0.336659,-0.106989,-0.150523,0.167739,-0.262486,0.111017,-0.068108,0.099617,-0.163847,0.067023,-0.485436,0.257284,0.251301,0.059973,0.645837,-0.130072,-0.020274,0.175711,0.13771,0.277958,-0.382322,0.221377,0.148215,0.442557,0.294708,-0.399746,0.431054,-0.024294,-0.597759,0.122286,-0.447687],[-0.360779,-0.191741,0.265969,0.131438,0.323391,0.392542,0.453196,0.094223,0.291123,-0.220098,0.158606,0.259869,0.094227,0.213976,0.248682,-0.237752,-0.195446,0.089305,0.060686,0.218874,0.114749,-0.300817,0.103118,-0.264817,-0.177294,0.439457,0.105343,-0.035946,-0.531284,-0.202152,-0.143855,-0.34027],[-0.456339,-0.222527,0.21441,0.115204,0.079227,0.384232,0.145028,-0.762824,0.290487,-0.071583,-0.037088,0.539108,0.116409,0.250533,-0.068,0.168607,-0.10638,0.009898,0.068838,0.388689,0.229333,-0.005425,0.110094,0.430035,0.115288,0.672785,-0.443466,0.080154,-0.089378,0.062733,0.183939,-0.267273],[-0.168009,0.103753,-0.293999,-0.34578,0.187534,0.254741,0.133486,0.080304,0.474859,-0.078007,0.311416,-0.15961,0.063666,0.052355,-0.048239,0.002879,-0.034257,-0.081298,0.241798,-0.066615,0.118905,-0.118431,0.003023,0.373553,0.613491,0.77184,-0.052525,0.0374,0.331616,0.054111,0.031915,-0.061154],[0.089368,-0.236966,-0.442609,-0.252541,0.211024,0.009097,0.268393,-0.185865,0.337865,-0.103229,-0.013709,0.19316,-0.190232,-0.083076,0.254335,0.016794,-0.276932,-0.023662,-0.158529,0.08609,-0.587501,0.05322,0.09243,0.742453,0.432755,0.325694,-0.087203,0.539755,0.042236,-0.085141,0.263091,0.068152]],"b1":[0.052515,-0.114147,-0.090009,0.173387,0.232862,0.235409,0.103811,-0.03418,0.495256,-0.085578,-0.106676,0.282648,-0.003297,0.285257,-0.080979,0.122137,-0.112368,-0.006156,-0.083317,-0.1315,0.125988,0.102961,0.175554,0.005204,0.292256,0.493018,-0.163326,0.046787,-0.024363,-0.144616,0.025118,-0.094167],"W2":[[0.247905,0.0064,0.067186],[0.520814,0.262849,-0.259896],[-0.182146,0.089023,-0.142225],[-0.165357,-0.04505,0.164198],[-0.621508,0.0415,0.042696],[-0.090302,-0.206414,0.104278],[-0.524793,-0.107485,0.430039],[0.056587,0.340752,0.089997],[-0.785633,-0.120591,0.0259],[0.110858,-0.0199,-0.574908],[0.255353,-0.418161,0.06142],[-0.379722,-0.177719,0.196458],[0.087122,-0.460015,-0.057723],[-0.283996,0.262586,0.507481],[0.403611,0.004027,-0.211153],[0.170546,-0.227345,0.262105],[-0.362103,0.139012,-0.054783],[0.197639,-0.333541,-0.258255],[0.321782,0.082312,-0.102749],[0.167537,0.080526,-0.221727],[-0.326803,0.23377,0.159144],[0.200349,0.293062,-0.526991],[-0.107705,-0.210046,0.453786],[-0.355498,-0.173309,-0.014464],[-0.257219,0.074294,0.446858],[-0.755844,-0.064972,0.225487],[-0.170144,0.079432,-0.118836],[-0.366214,-0.052883,-0.259423],[0.12713,0.154928,-0.266416],[0.090311,0.180466,-0.328371],[0.009128,-0.199879,-0.318086],[-0.027769,-0.453296,-0.054192]],"b2":[-0.134508,0.027185,0.071756],"mean":[0.740027,2.655617,6.667496,2.799702,37.491071,7.649509,7.22808,3.73244],"std":[0.211405,1.35471,2.741984,1.302188,14.794422,0.793124,0.50709,1.476448],"examples":[{"proficiency":"0.936","word_log_freq":"2.887","age_of_acquisition":"6.2","n_syllables":"4","participant_age":"37","recall_rt_ms":"868","recognition_rt_ms":"1939","feeling_of_knowing":"6","is_cognate":"0","is_proper_name":"0","partial_first_letter":"1","partial_syllables":"1","translation_recalled":"1","recognition_correct":"1","test_language_role":"dominant","test_language":"English","outcome":"KNOW"},{"proficiency":"0.976","word_log_freq":"4.797","age_of_acquisition":"6.54","n_syllables":"1","participant_age":"25","recall_rt_ms":"985","recognition_rt_ms":"1010","feeling_of_knowing":"4","is_cognate":"1","is_proper_name":"0","partial_first_letter":"1","partial_syllables":"1","translation_recalled":"1","recognition_correct":"1","test_language_role":"dominant","test_language":"English","outcome":"KNOW"},{"proficiency":"0.356","word_log_freq":"2.978","age_of_acquisition":"6.64","n_syllables":"6","participant_age":"18","recall_rt_ms":"14467","recognition_rt_ms":"3134","feeling_of_knowing":"2","is_cognate":"1","is_proper_name":"0","partial_first_letter":"0","partial_syllables":"0","translation_recalled":"1","recognition_correct":"1","test_language_role":"nondominant","test_language":"French","outcome":"TOT"},{"proficiency":"0.866","word_log_freq":"0.371","age_of_acquisition":"10.92","n_syllables":"4","participant_age":"24","recall_rt_ms":"6767","recognition_rt_ms":"1358","feeling_of_knowing":"2","is_cognate":"1","is_proper_name":"0","partial_first_letter":"1","partial_syllables":"1","translation_recalled":"0","recognition_correct":"1","test_language_role":"dominant","test_language":"English","outcome":"TOT"},{"proficiency":"0.981","word_log_freq":"1.416","age_of_acquisition":"11.07","n_syllables":"3","participant_age":"43","recall_rt_ms":"7233","recognition_rt_ms":"1922","feeling_of_knowing":"1","is_cognate":"0","is_proper_name":"0","partial_first_letter":"0","partial_syllables":"1","translation_recalled":"0","recognition_correct":"0","test_language_role":"dominant","test_language":"Catalan","outcome":"DONT_KNOW"},{"proficiency":"0.293","word_log_freq":"0.427","age_of_acquisition":"9.5","n_syllables":"5","participant_age":"30","recall_rt_ms":"3016","recognition_rt_ms":"2371","feeling_of_knowing":"1","is_cognate":"1","is_proper_name":"0","partial_first_letter":"0","partial_syllables":"0","translation_recalled":"0","recognition_correct":"1","test_language_role":"third","test_language":"Catalan","outcome":"DONT_KNOW"},{"proficiency":"0.356","word_log_freq":"0.467","age_of_acquisition":"5.46","n_syllables":"2","participant_age":"18","recall_rt_ms":"6396","recognition_rt_ms":"2569","feeling_of_knowing":"1","is_cognate":"1","is_proper_name":"0","partial_first_letter":"0","partial_syllables":"1","translation_recalled":"1","recognition_correct":"1","test_language_role":"nondominant","test_language":"French","outcome":"TOT"}],"confusion":[[1196,122,23],[39,322,81],[3,53,321]],"importance":{"recall_rt_ms":0.323,"word_log_freq":0.1717,"partial_first_letter":0.1102,"feeling_of_knowing":0.1013,"recognition_correct":0.0914,"translation_recalled":0.0714,"proficiency":0.0328,"recognition_rt_ms":0.0327},"history":[{"epoch":1,"train_loss":0.9164,"lr":0.001,"val_loss":0.6473,"val_acc":0.7889},{"epoch":2,"train_loss":0.5964,"lr":0.001,"val_loss":0.5036,"val_acc":0.8259},{"epoch":3,"train_loss":0.512,"lr":0.001,"val_loss":0.4575,"val_acc":0.8426},{"epoch":4,"train_loss":0.4834,"lr":0.001,"val_loss":0.4404,"val_acc":0.8481},{"epoch":5,"train_loss":0.4669,"lr":0.001,"val_loss":0.4333,"val_acc":0.8514},{"epoch":6,"train_loss":0.4639,"lr":0.001,"val_loss":0.4304,"val_acc":0.8389},{"epoch":7,"train_loss":0.4526,"lr":0.001,"val_loss":0.4263,"val_acc":0.8407},{"epoch":8,"train_loss":0.4489,"lr":0.001,"val_loss":0.4234,"val_acc":0.8468},{"epoch":9,"train_loss":0.4433,"lr":0.001,"val_loss":0.4226,"val_acc":0.8435},{"epoch":10,"train_loss":0.4403,"lr":0.001,"val_loss":0.4219,"val_acc":0.8431},{"epoch":11,"train_loss":0.4417,"lr":0.001,"val_loss":0.4209,"val_acc":0.8463},{"epoch":12,"train_loss":0.439,"lr":0.001,"val_loss":0.4201,"val_acc":0.8458},{"epoch":13,"train_loss":0.4328,"lr":0.001,"val_loss":0.4185,"val_acc":0.8472},{"epoch":14,"train_loss":0.4313,"lr":0.001,"val_loss":0.4227,"val_acc":0.8361},{"epoch":15,"train_loss":0.4339,"lr":0.001,"val_loss":0.4199,"val_acc":0.8444},{"epoch":16,"train_loss":0.4326,"lr":0.001,"val_loss":0.419,"val_acc":0.8444},{"epoch":17,"train_loss":0.4281,"lr":0.001,"val_loss":0.4194,"val_acc":0.8444},{"epoch":18,"train_loss":0.425,"lr":0.001,"val_loss":0.4177,"val_acc":0.8505},{"epoch":19,"train_loss":0.4238,"lr":0.001,"val_loss":0.4169,"val_acc":0.8463},{"epoch":20,"train_loss":0.4245,"lr":0.001,"val_loss":0.4195,"val_acc":0.8407},{"epoch":21,"train_loss":0.4225,"lr":0.001,"val_loss":0.4186,"val_acc":0.8431},{"epoch":22,"train_loss":0.4214,"lr":0.001,"val_loss":0.416,"val_acc":0.8505},{"epoch":23,"train_loss":0.4203,"lr":0.001,"val_loss":0.4179,"val_acc":0.8472},{"epoch":24,"train_loss":0.4178,"lr":0.001,"val_loss":0.4169,"val_acc":0.8463},{"epoch":25,"train_loss":0.4166,"lr":0.001,"val_loss":0.4175,"val_acc":0.8532},{"epoch":26,"train_loss":0.4179,"lr":0.001,"val_loss":0.4174,"val_acc":0.8458},{"epoch":27,"train_loss":0.4164,"lr":0.001,"val_loss":0.417,"val_acc":0.8486},{"epoch":28,"train_loss":0.4165,"lr":0.001,"val_loss":0.4176,"val_acc":0.8468},{"epoch":29,"train_loss":0.4144,"lr":0.0005,"val_loss":0.417,"val_acc":0.8458},{"epoch":30,"train_loss":0.4129,"lr":0.0005,"val_loss":0.4174,"val_acc":0.8449},{"epoch":31,"train_loss":0.4155,"lr":0.0005,"val_loss":0.4172,"val_acc":0.8486},{"epoch":32,"train_loss":0.4144,"lr":0.0005,"val_loss":0.4187,"val_acc":0.8454},{"epoch":33,"train_loss":0.4132,"lr":0.0005,"val_loss":0.4173,"val_acc":0.8477},{"epoch":34,"train_loss":0.4118,"lr":0.0005,"val_loss":0.4174,"val_acc":0.8454},{"epoch":35,"train_loss":0.412,"lr":0.0003,"val_loss":0.4176,"val_acc":0.8444},{"epoch":36,"train_loss":0.413,"lr":0.0003,"val_loss":0.4182,"val_acc":0.8454},{"epoch":37,"train_loss":0.4112,"lr":0.0003,"val_loss":0.4182,"val_acc":0.8454}]};
+const CLASSES = [
+  { key: "KNOW", name: "Know", color: "var(--know)", soft: "var(--know-soft)", big: "Retrieved", gloss: "The word came out. A quick, confident answer." },
+  { key: "TOT", name: "Tip of the tongue", color: "var(--tot)", soft: "var(--tot-soft)", big: "Tip of the tongue", gloss: "They know the word but can't get it out. A long search, a strong feeling of knowing, and partial access to its sound." },
+  { key: "DONT_KNOW", name: "Don't know", color: "var(--dk)", soft: "var(--dk-soft)", big: "Doesn't know it", gloss: "The word isn't there to find. Little feeling of knowing and no partial recall." },
+];
+const NUM = ["proficiency","word_log_freq","age_of_acquisition","n_syllables","participant_age","recall_rt_ms","recognition_rt_ms","feeling_of_knowing"];
+const BIN = ["is_cognate","is_proper_name","partial_first_letter","partial_syllables","translation_recalled","recognition_correct"];
+const ROLES = ["dominant","nondominant","third"], LANGS = ["English","Spanish","Catalan","French","Mandarin"];
+const LABEL = { proficiency: "Proficiency", word_log_freq: "Word frequency", age_of_acquisition: "Age learned", n_syllables: "Syllables",
+  participant_age: "Participant age", recall_rt_ms: "Time searching", recognition_rt_ms: "Time to recognize", feeling_of_knowing: "Feeling of knowing",
+  is_cognate: "Cognate", is_proper_name: "Proper name", partial_first_letter: "First letter", partial_syllables: "Syllable count",
+  translation_recalled: "Known in other language", recognition_correct: "Recognized later", role: "Language role", lang: "Test language" };
+
+// log-scale sliders for response times
+const RT = { recall_rt_ms: [300, 20000], recognition_rt_ms: [400, 6000] };
+const toRT = (k, t) => Math.round(RT[k][0] * Math.pow(RT[k][1] / RT[k][0], t));
+const fromRT = (k, v) => Math.log(v / RT[k][0]) / Math.log(RT[k][1] / RT[k][0]);
+const $ = id => document.getElementById(id);
+
+let trial = { proficiency: .6, word_log_freq: 1.2, age_of_acquisition: 14, n_syllables: 4, participant_age: 61,
+  recall_rt_ms: 8200, recognition_rt_ms: 1400, feeling_of_knowing: 5, is_cognate: 0, is_proper_name: 0,
+  partial_first_letter: 1, partial_syllables: 0, translation_recalled: 1, recognition_correct: 1,
+  test_language_role: "nondominant", test_language: "English" };
+
+// ---------- the network: same math as FeedforwardNet.predict_proba ----------
+function encode(t) {
+  const x = NUM.map((k, i) => {
+    let v = +t[k]; if (k === "recall_rt_ms" || k === "recognition_rt_ms") v = Math.log(v);
+    return (v - M.mean[i]) / M.std[i];
+  });
+  BIN.forEach(k => x.push(+t[k] ? 1 : 0));
+  ROLES.forEach(r => x.push(t.test_language_role === r ? 1 : 0));
+  LANGS.forEach(l => x.push(t.test_language === l ? 1 : 0));
+  return x;
+}
+function forward(x) {
+  const h = M.b1.map((b, j) => { let s = b; for (let i = 0; i < x.length; i++) s += x[i] * M.W1[i][j]; return Math.max(0, s); });
+  const z = M.b2.map((b, k) => { let s = b; for (let j = 0; j < h.length; j++) s += h[j] * M.W2[j][k]; return s; });
+  const m = Math.max(...z), e = z.map(v => Math.exp(v - m)), S = e.reduce((a, b) => a + b, 0);
+  return { h, p: e.map(v => v / S) };
+}
+
+// occlusion: reset one input to the average (z = 0) or flip a toggle, measure change in predicted class prob
+function explain(t, cls) {
+  const x = encode(t), base = forward(x).p[cls], out = [];
+  NUM.forEach((k, i) => { const y = x.slice(); y[i] = 0; out.push([k, base - forward(y).p[cls]]); });
+  BIN.forEach((k, i) => { const y = x.slice(); y[8 + i] = 1 - y[8 + i]; out.push([k, base - forward(y).p[cls]]); });
+  ["role", "lang"].forEach((g, gi) => {          // reset a categorical group to its most common value
+    const alt = { ...t }; if (g === "role") alt.test_language_role = t.test_language_role === "dominant" ? "nondominant" : "dominant";
+    else alt.test_language = t.test_language === "English" ? "Spanish" : "English";
+    out.push([g, base - forward(encode(alt)).p[cls]]);
+  });
+  return out.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 5);
+}
+
+// ---------- controls ----------
+function fmt(k, v) {
+  switch (k) {
+    case "proficiency": return Math.round(v * 100) + "%";
+    case "word_log_freq": { const n = Math.pow(10, v); return (n >= 10 ? Math.round(n) : n.toFixed(n >= 1 ? 1 : 2)) + "/M"; }
+    case "age_of_acquisition": return (+v).toFixed(1).replace(".0", "") + " yrs";
+    case "participant_age": return v + " yrs";
+    case "recall_rt_ms": case "recognition_rt_ms": return v >= 1000 ? (v / 1000).toFixed(1) + " s" : v + " ms";
+    case "feeling_of_knowing": return v + " / 6";
+    default: return String(v);
+  }
+}
+function syncControls() {
+  NUM.forEach(k => {
+    const el = $(k); el.value = RT[k] ? fromRT(k, trial[k]) : trial[k];
+    $("v-" + k).textContent = fmt(k, trial[k]);
+  });
+  BIN.forEach(k => $(k).checked = !!+trial[k]);
+  $("lang").value = trial.test_language;
+  document.querySelectorAll("#role button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === trial.test_language_role)));
+}
+NUM.forEach(k => $(k).addEventListener("input", e => {
+  trial[k] = RT[k] ? toRT(k, +e.target.value) : +e.target.value;
+  $("v-" + k).textContent = fmt(k, trial[k]); markExample(null); update();
+}));
+BIN.forEach(k => $(k).addEventListener("change", e => { trial[k] = e.target.checked ? 1 : 0; markExample(null); update(); }));
+$("lang").addEventListener("change", e => { trial.test_language = e.target.value; markExample(null); update(); });
+document.querySelectorAll("#role button").forEach(b => b.addEventListener("click", () => {
+  trial.test_language_role = b.dataset.v; syncControls(); markExample(null); update();
+}));
+
+// ---------- verdict ----------
+function update() {
+  const { h, p } = forward(encode(trial)), cls = p.indexOf(Math.max(...p)), C = CLASSES[cls];
+  $("bigState").textContent = C.big; $("bigState").style.color = C.color;
+  document.querySelector(".verdict").style.setProperty("--glow", C.color);
+  $("gloss").textContent = C.gloss;
+  $("probs").innerHTML = CLASSES.map((c, i) => `
+    <div class="prob"><span class="name"><span class="sw" style="background:${c.color}"></span>${c.name}</span>
+    <div class="track"><div style="width:${(p[i] * 100).toFixed(1)}%;background:${c.color}"></div></div>
+    <span class="p">${(p[i] * 100).toFixed(1)}%</span></div>`).join("");
+  const hmax = Math.max(...h, 1e-6), active = h.filter(v => v > 0).length;
+  $("hidden").innerHTML = h.map((v, j) => `<div title="unit ${j + 1}: ${v.toFixed(2)}" style="opacity:${(0.1 + 0.9 * v / hmax).toFixed(3)};box-shadow:0 0 ${(14 * v / hmax).toFixed(1)}px var(--accent)"></div>`).join("");
+  $("netcap").textContent = `${active} of 32 units active for this trial. Brighter means a stronger activation.`;
+  $("whyTitle").textContent = `What moved "${C.name.toLowerCase()}"`;
+  const ex = explain(trial, cls), mx = Math.max(0.05, ...ex.map(e => Math.abs(e[1])));
+  $("why").innerHTML = ex.map(([k, d]) => {
+    const w = Math.abs(d) / mx * 50, left = d >= 0 ? 50 : 50 - w;
+    return `<div class="why-item"><span class="lab">${LABEL[k]} <span class="num" style="color:var(--ink-3)">${d >= 0 ? "+" : "−"}${Math.abs(d * 100).toFixed(1)}</span></span>
+      <div class="why-bar"><span style="left:${left}%;width:${w}%;background:${d >= 0 ? C.color : "var(--ink-3)"}"></span><span class="mid"></span></div></div>`;
+  }).join("");
+}
+
+// ---------- real test examples ----------
+function markExample(i) { document.querySelectorAll(".ex").forEach((b, j) => b.setAttribute("aria-pressed", String(j === i))); }
+function renderExamples() {
+  $("examples").innerHTML = M.examples.map((e, i) => {
+    const t = CLASSES.findIndex(c => c.key === e.outcome), p = forward(encode(e)).p, pred = p.indexOf(Math.max(...p));
+    const role = { dominant: "dominant", nondominant: "2nd language", third: "3rd language" }[e.test_language_role];
+    return `<button class="ex" type="button" data-i="${i}" aria-pressed="false">
+      <span class="t" style="color:${CLASSES[t].color}">${CLASSES[t].name}</span>
+      <span class="s">${e.test_language}, ${role} · ${fmt("recall_rt_ms", +e.recall_rt_ms)}</span>
+      <span class="s ${pred === t ? "" : "miss"}">${pred === t ? "Predicted correctly" : "Network said " + CLASSES[pred].name.toLowerCase()}</span></button>`;
+  }).join("");
+  document.querySelectorAll(".ex").forEach(b => b.addEventListener("click", () => {
+    const e = M.examples[+b.dataset.i];
+    trial = Object.fromEntries(Object.entries(e).filter(([k]) => k !== "outcome").map(([k, v]) => [k, isNaN(+v) ? v : +v]));
+    syncControls(); markExample(+b.dataset.i); update();
+  }));
+}
+
+// ---------- evidence charts ----------
+const tip = $("tip");
+function bindTips(root) {
+  root.querySelectorAll("[data-tip]").forEach(el => {
+    el.addEventListener("mousemove", ev => { tip.textContent = el.dataset.tip; tip.style.left = (ev.clientX + 12) + "px"; tip.style.top = (ev.clientY - 30) + "px"; tip.style.opacity = 1; });
+    el.addEventListener("mouseleave", () => tip.style.opacity = 0);
+  });
+}
+function renderConfusion() {
+  const cm = M.confusion, short = ["Know", "TOT", "Don't know"];
+  let s = `<tr><th></th>${short.map(n => `<th>${n}</th>`).join("")}</tr>`;
+  cm.forEach((row, i) => {
+    const tot = row.reduce((a, b) => a + b, 0);
+    s += `<tr><th class="rowh">${short[i]}</th>` + row.map((v, j) => {
+      const share = v / tot, diag = i === j;
+      const bg = diag ? `color-mix(in srgb, ${CLASSES[i].color} ${Math.round(18 + 62 * share)}%, var(--panel))` : `color-mix(in srgb, var(--ink-3) ${Math.round(4 + 40 * share)}%, var(--panel))`;
+      return `<td style="background:${bg};${diag ? "font-weight:700" : ""}" data-tip="true ${short[i]} → predicted ${short[j]}: ${v} (${(share * 100).toFixed(1)}%)">${v}</td>`;
+    }).join("") + `</tr>`;
+  });
+  $("cm").innerHTML = s; bindTips($("cm"));
+}
+function renderImportance() {
+  const items = Object.entries(M.importance), W = 320, rowH = 26, left = 128, right = 44, H = items.length * rowH;
+  const mx = Math.max(...items.map(i => i[1])), x = v => left + v / mx * (W - left - right);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Permutation importance bars">`;
+  items.forEach(([k, v], i) => {
+    const y = i * rowH + 5;
+    s += `<text x="${left - 8}" y="${y + 12}" text-anchor="end" font-size="11.5" fill="var(--ink-2)" font-family="Manrope, sans-serif">${LABEL[k]}</text>`;
+    s += `<rect x="${left}" y="${y + 2}" width="${Math.max(2, x(v) - left)}" height="14" rx="3" fill="var(--accent)" data-tip="${LABEL[k]}: +${v.toFixed(3)} loss when shuffled"/>`;
+    s += `<text x="${x(v) + 5}" y="${y + 13}" font-size="10.5" fill="var(--ink-3)" font-family="JetBrains Mono, monospace">${v.toFixed(3)}</text>`;
+  });
+  $("imp").innerHTML = s + `</svg>`; bindTips($("imp"));
+}
+function renderCurve() {
+  const h = M.history, W = 320, H = 170, L = 34, R = 10, T = 8, B = 26;
+  const xmax = h.length, ymin = 0.4, ymax = 0.95;
+  const x = e => L + (e - 1) / (xmax - 1) * (W - L - R), y = v => T + (1 - (v - ymin) / (ymax - ymin)) * (H - T - B);
+  const best = h.reduce((a, b) => b.val_loss < a.val_loss ? b : a);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Training and validation loss by epoch">`;
+  [0.4, 0.6, 0.8].forEach(v => s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line-2)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="10" fill="var(--ink-3)" font-family="JetBrains Mono, monospace">${v.toFixed(1)}</text>`);
+  [1, 10, 20, 30, xmax].forEach(e => s += `<text x="${x(e)}" y="${H - 8}" text-anchor="middle" font-size="10" fill="var(--ink-3)" font-family="JetBrains Mono, monospace">${e}</text>`);
+  s += `<line x1="${x(best.epoch)}" x2="${x(best.epoch)}" y1="${T}" y2="${H - B}" stroke="var(--ink-3)" stroke-dasharray="2 3"/>`;
+  s += `<text x="${x(best.epoch) + 4}" y="${T + 10}" font-size="10" fill="var(--ink-2)" font-family="Manrope, sans-serif">best, epoch ${best.epoch}</text>`;
+  const line = k => h.map(r => `${x(r.epoch).toFixed(1)},${y(r[k]).toFixed(1)}`).join(" ");
+  s += `<polyline points="${line("train_loss")}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>`;
+  s += `<polyline points="${line("val_loss")}" fill="none" stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="5 3" stroke-linejoin="round"/>`;
+  s += `<circle cx="${x(best.epoch)}" cy="${y(best.val_loss)}" r="4" fill="var(--ink-2)" stroke="var(--panel)" stroke-width="2"/>`;
+  h.forEach(r => s += `<rect x="${x(r.epoch) - 4}" y="${T}" width="8" height="${H - T - B}" fill="transparent" data-tip="epoch ${r.epoch} · train ${r.train_loss.toFixed(3)} · val ${r.val_loss.toFixed(3)} · val acc ${(r.val_acc * 100).toFixed(1)}%"/>`);
+  $("curve").innerHTML = s + `</svg>`; bindTips($("curve"));
+}
+
+
+// ---------- hero: a word stuck on the tip of the tongue ----------
+(function tipOfTongue() {
+  const WORDS = [
+    ["serendipity", "finding something good without looking for it"],
+    ["sommelier", "the wine expert at a restaurant"],
+    ["metronome", "the ticking device musicians keep time with"],
+    ["origami", "the Japanese art of folding paper"],
+    ["periscope", "how a submarine sees above the water"],
+    ["nostalgia", "a bittersweet longing for the past"],
+  ];
+  const glyphs = "abcdefghijklmnopqrstuvwxyz";
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let w = 0, tick = 0, locked;
+  function load() {
+    const [word, def] = WORDS[w % WORDS.length];
+    $("clue").innerHTML = `Name the word: <b>${def}</b>`;
+    $("tiles").innerHTML = [...word].map(() => `<div class="tile">·</div>`).join("");
+    locked = new Set([0]); tick = 0;
+  }
+  function frame() {
+    const [word] = WORDS[w % WORDS.length], tiles = $("tiles").children;
+    tick++;
+    if (tick % 6 === 0 && locked.size < word.length - 2) {          // letters surface... but never all of them
+      const i = 1 + Math.floor(Math.random() * (word.length - 1)); locked.add(i);
+    }
+    if (tick % 9 === 0 && locked.size > 2) {                         // ...and slip away again
+      const opts = [...locked].filter(i => i !== 0); locked.delete(opts[Math.floor(Math.random() * opts.length)]);
+    }
+    [...tiles].forEach((t, i) => {
+      const on = locked.has(i);
+      t.className = "tile" + (on ? " lock" : "");
+      t.textContent = on ? word[i] : (still ? "·" : glyphs[Math.floor(Math.random() * 26)]);
+    });
+    const fok = Math.min(6, 2 + Math.round(4 * locked.size / word.length) + (tick > 12 ? 1 : 0));
+    $("fok").style.width = (fok / 6 * 100) + "%"; $("fokv").textContent = fok + "/6";
+    if (tick > 60) { w++; load(); }
+  }
+  load(); frame();
+  if (!still) setInterval(frame, 140);
+})();
+
+syncControls(); update(); renderExamples(); renderConfusion(); renderImportance(); renderCurve();
+</script>

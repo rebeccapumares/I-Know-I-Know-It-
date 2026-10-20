@@ -1,0 +1,23 @@
+[
+  {
+    "type": "Dense",
+    "n_in": 22,
+    "n_out": 32,
+    "init": "he",
+    "l2": 0.0001
+  },
+  {
+    "type": "ReLU"
+  },
+  {
+    "type": "Dropout",
+    "rate": 0.1
+  },
+  {
+    "type": "Dense",
+    "n_in": 32,
+    "n_out": 3,
+    "init": "xavier",
+    "l2": 0.0001
+  }
+]
